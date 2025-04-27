@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Main container for posts, styled with background and rounded corners -->
+<div class="bg-white w-full flex justify-center h-full m-5 rounded-xl shadow-2xl">
+  
+  <!-- Scrollable container for posts, with custom scrollbar styling -->
+  <div class="h-full overflow-x-auto w-1/2" style="scrollbar-width: none; -ms-overflow-style: none;">
+    
+    <!-- Title for the posts section -->
+    <h1 class="text-center text-3xl font-semibold my-6">{% block header %}Posts{% endblock %}</h1>
+    
+    <!-- Section for creating a post and searching posts -->
+    <div class="flex items-center justify-between mb-5">
+      
+      {% block footer %}
+      <div class="flex items-center">
+        <!-- Button to create a new post -->
+        <a href="/create-post">
+          <button type="button" class="bg-blue-500 text-white py-2 px-8 rounded-md hover:bg-blue-600">
+            Create a Post
+          </button>
+        </a>
+      </div>
+      {% endblock %}
+      
+      <!-- Search form for filtering posts by username -->
+      <form method="GET" action="{{ url_for('views.home') }}" class="">
+        <div class="flex items-center border rounded-lg border-gray-200">
+          <input type="text" class="form-control w-full ml-3" name="search" placeholder="Search by username..." value="{{ request.args.get('search', '') }}">
+          <button class="btn btn-outline-secondary px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600" type="submit">Search</button>
+        </div>
+      </form>
+    </div>
+    
+    <!-- Loop through and display each post -->
+    <div id="posts" class="space-y-6">
+      {% for post in posts.items %}
+      <div class="bg-white p-4 rounded-lg shadow-xl border border-gray-200">
+        <div class="flex justify-between items-center">
+          <!-- Username link for the post author -->
+          <a href="/posts/{{post.user.username}}" class="font-semibold text-blue-600 hover:underline">{{post.user.username}}</a>
+          
+          <!-- Like button and dropdown for post options (edit/delete) -->
+          <div class="flex items-center space-x-4">
+            <span id="likes-count-{{post.id}}" class="text-gray-700">{{ post.likes|length }}</span>
+            
+            {% if user.id in post.likes|map(attribute="author")|list %}
+            <i class="fas fa-thumbs-up text-blue-500 cursor-pointer" id="like-button-{{post.id}}" onclick="like({{post.id}})"></i>
+            {% else %}
+            <i class="far fa-thumbs-up text-gray-500 cursor-pointer" id="like-button-{{post.id}}" onclick="like({{post.id}})"></i>
+            {% endif %}
+            
+            {% if user.id == post.author %}
+            <div class="relative">
+              <!-- Hidden checkbox to toggle dropdown visibility -->
+              <input type="checkbox" id="dropdownToggle" class="hidden peer" />
+              
+              <!-- Button to toggle the dropdown -->
+              <label for="dropdownToggle" class="text-gray-500 hover:text-gray-700 cursor-pointer focus:outline-none">
+                <i class="fas fa-ellipsis-v"></i>
+              </label>
+              
+              <!-- Dropdown Menu with options for editing or deleting post -->
+              <ul class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 peer-checked:opacity-100 peer-checked:pointer-events-auto">
+                <li>
+                  <a href="/edit-post/{{post.id}}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Edit</a>
+                </li>
+                <li>
+                  <a href="/delete-post/{{post.id}}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Delete</a>
+                </li>
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+    
+        <!-- Display post content -->
+        <div class="mt-4">
+          <p class="text-gray-700">{{ post.text }}</p>
+        
+          <!-- Comments Section (Initially Hidden) -->
+          <div class="mt-4">
+            <!-- Checkbox input to toggle visibility of comments -->
+            <input type="checkbox" id="toggle-comments-{{ post.id }}" class="hidden peer" />
+        
+            <!-- Comments will be shown when checkbox is checked -->
+            <div class="peer-checked:block hidden space-y-4 mt-4" id="comments-{{ post.id }}">
+              {% for comment in post.comments %}
+                <div class="flex justify-between items-center">
+                  <div>
+                    <a href="/posts/{{ comment.user.username }}" class="font-semibold text-blue-600 hover:underline">{{ comment.user.username }}</a>: {{ comment.text }}
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    <small>{{ comment.date_created }}</small>
+                    {% if user.id == comment.author or user.id == post.author %}
+                      <div class="text-end">
+                        <!-- Link to delete the comment -->
+                        <a href="/delete-comment/{{ comment.id }}" class="text-red-500 hover:text-red-700">Delete</a>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+        
+            <!-- Link to toggle the comment section -->
+            <p class="text-sm text-gray-500 mt-2">
+              {% if post.comments|length > 0 %}
+                <label for="toggle-comments-{{ post.id }}" class="text-blue-500 cursor-pointer">View {{ post.comments|length }} Comments</label>
+              {% else %}
+                <span>No Comments</span>
+              {% endif %}
+            </p>
+          </div>
+        
+          <!-- Comment Form -->
+          <form method="POST" action="/create-comment/{{ post.id }}" class="mt-4">
+            <div class="flex items-center">
+              <input
+                type="text"
+                id="text"
+                name="text"
+                class="form-control p-2 w-full rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                placeholder="Comment something!"
+              />
+              <button type="submit" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                Comment
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Display post creation date -->
+        <div class="text-sm text-gray-500 mt-2">
+          {{ post.date_created }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    
+    <!-- Pagination Section -->
+    <div class="mt-6 flex justify-between mb-5">
+      {% if posts.has_prev %}
+      <a href="{{ url_for('views.home', page=posts.prev_num, search=request.args.get('search', '')) }}" class="border rounded-xl px-10 py-2 text-gray-300 bg-blue-500">Previous</a>
+      {% endif %}
+      {% if posts.has_next %}
+      <a href="{{ url_for('views.home', page=posts.next_num, search=request.args.get('search', '')) }}" class="border rounded-xl px-10 py-2 text-gray-300 bg-blue-500">Next</a>
+      {% endif %}
+    </div>
+    
+  </div>
+</div>
+{% endblock %}

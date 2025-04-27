@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Post{% endblock %}
+
+{% block content %}
+<!-- Main container for editing the post -->
+<div class="bg-white w-full flex flex-col justify-center h-full m-5 rounded-xl shadow-2xl">
+    <!-- Title of the page -->
+    <h1 class="text-center text-3xl font-semibold my-6">Edit Post</h1>
+
+    <!-- Form to edit the post -->
+    <form method="POST" class="w-1/2 mx-auto p-6 bg-white shadow-lg rounded-lg">
+      <div class="mb-6">
+        <!-- Label and textarea for editing the post content -->
+        <label for="text" class="block text-lg font-medium text-gray-700">Post Content</label>
+        <textarea
+          class="form-control p-4 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+          id="text"
+          name="text"
+          rows="4">{{ post.text }}</textarea>
+      </div>
+      <div class="text-end">
+        <!-- Back button that redirects to the home page -->
+        <a href="{{ url_for('views.home') }}">
+            <button type="button" class=" bg-gray-500 text-white py-2 px-6 rounded-lg hover:bg-gray-600">
+              Back to Home
+            </button>
+        </a>
+        <!-- Submit button to update the post -->
+        <button type="submit" class="ml-3 bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600">
+          Update Post
+        </button>
+      </div>
+    </form>
+    
+    <!-- Placeholder for any additional content if needed -->
+    <div class="mt-6 text-end">
+      
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "posts_div.html" %}
+
+{% block title %}{{ username }}'s Posts{% endblock %}
+
+{% block content %}
+<!-- Main container for displaying the posts of a specific user, with styling and rounded corners -->
+<div class="flex flex-col justify-center items-center bg-white w-full h-full m-3 rounded-2xl">
+  
+  {% block header %}
+  <!-- Title block displaying the user's posts header -->
+  <h1 class="text-center text-3xl font-semibold my-6">{{ username }}'s Posts</h1>
+  {% endblock %}
+  
+  <!-- Container for the list of posts, with scroll and border styling -->
+  <div class="space-y-6 overflow-x-auto w-1/2 border border-gray-200 rounded-xl">
+    
+    <!-- Loop through the posts and display them -->
+    {% for post in posts %}
+    <div class="bg-white p-4 rounded-lg shadow-xl border border-gray-200">
+      <div class="flex justify-between items-center">
+        <!-- Link to view the post author's profile -->
+        <a href="/posts/{{ post.user.username }}" class="font-semibold text-blue-600 hover:underline">{{ post.user.username }}</a>
+        <!-- Display the post's creation date -->
+        <p class="text-sm text-gray-500">{{ post.date_created }}</p>
+      </div>
+      <!-- Display the content of the post -->
+      <p class="mt-4 text-gray-700">{{ post.text }}</p>
+    </div>
+    {% else %}
+    <!-- Message when there are no posts -->
+    <p>No posts to display.</p>
+    {% endfor %}
+  </div>
+  
+  {% block footer %}
+  <!-- Footer section with a button to return to the home page -->
+  <div class="text-end mt-6 mb-5">
+    <a href="/home">
+      <button type="button" class="bg-blue-500 text-white py-2 px-10 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        Back
+      </button>
+    </a>
+  </div>
+  {% endblock %}
+</div>
+{% endblock %}
